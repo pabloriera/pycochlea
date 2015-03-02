@@ -62,17 +62,12 @@ void Cochlea_t::operator() (  flotante_vector &X , flotante_vector &dXdt , flota
     flotante _X,X_;
 
 
-    //linear interpolation on FORCE or STIMULUS
+    //linear interpolation on STIMULUS
     F0 = lin_interp( stimulus, t / dt );
-    
-    //COMPUTE g = d*V + s*Y    
+
 
     for(int i=0;i< N;i++)
     {
-//        g[i] = F0*weight[i] + (dv + dvy2*dampingNL2( X[i], gamma, delta ) ) * X[i+N] * ddivm[i] +  X[i] * sdivm[i] ;
-        
-//        _X =  -lin_interp( X.data(), clip(i - N*delta,0,N-1) )*zet;
-//        X_ =  lin_interp( X.data(), clip(i + N*delta,0,N-1) )*eps;
 
         if(i - N_delta >=0 )
             _X =  lin_interp( X.data(), i - N_delta )*zeta;
@@ -84,12 +79,7 @@ void Cochlea_t::operator() (  flotante_vector &X , flotante_vector &dXdt , flota
         else
         {
             X_ = 0;
-            // cout << i << " " << N_delta <<" "<< endl;
-        }
-            
-            // X_ = X[i]*eps*(N-i)/(float)N ;
-            // X_ = lin_interp( X.data(),  N-1 )*eps*(N-i)/(float)N ;
-        
+        }       
 
         if (nu!=0)
             g[i] = X[i+N] * ddivm[i] +  X[i] * sdivm[i] + nu*( tanh(_X/nu) + tanh( X_/nu ) )*sdivm[i] ;
@@ -99,22 +89,13 @@ void Cochlea_t::operator() (  flotante_vector &X , flotante_vector &dXdt , flota
             g[i] = (  1+ gamma*dampingNL( X[i], eta )  ) * X[i+N]* ddivm[i]  +  ( X[i] + _X + X_ ) * sdivm[i];
         
 
+        //Alternative oscilator impedances
         // g[i] = (  1+ gamma*dampingNL( X[i], eta )  ) * X[i+N]* ddivm[i]  +  ( X[i] + _X + X_ ) * sdivm[i];
         // g[i] = (  1+ gamma*dampingNL( X[i], eta )  ) * X[i+N]* ddivm[i] +  X[i] * sdivm[i] + fluid*( tanh(_X/fluid) + tanh( X_/fluid ) )*sdivm[i] ;
-
         // g[i] = X[i+N]* ddivm[i]  +  ( X[i] + (_X + X_)*( 1 - gamma*dampingNL( X[i], eta ) ) ) * sdivm[i];
-
         // g[i] = X[i+N] * ddivm[i] +  X[i] * sdivm[i] + gamma*( tanh(_X/gamma) + tanh( X_/gamma ) )*sdivm[i] ;
-
-
-
-
-        // g[i] = F0*weight[i] + X[i+N] * ddivm[i] +  X[i] * sdivm[i];
-        
-        // g[i] = X[i+N] * ddivm[i] +  X[i] * sdivm[i] + gamma*( tanh(_X*sdivm[i]/gamma) + tanh( X_*sdivm[i]/gamma ) ) ;
-
-        
-
+        // g[i] = F0*weight[i] + X[i+N] * ddivm[i] +  X[i] * sdivm[i];     
+        // g[i] = X[i+N] * ddivm[i] +  X[i] * sdivm[i] + gamma*( tanh(_X*sdivm[i]/gamma) + tanh( X_*sdivm[i]/gamma ) ) ;      
         // g[i] = F0*weight[i] + (1 + dv*dampingNL( X[i], gamma ) - dv*dampingNL( _X+X_, gamma )  ) * X[i+N] * ddivm[i] + ( X[i] ) * sdivm[i];
         // g[i] = F0*weight[i] + ( dv + dvy2*X[i]*X[i] ) * X[i+N] * ddivm[i] +  X[i] * sdivm[i] ;
     }
@@ -126,13 +107,12 @@ void Cochlea_t::operator() (  flotante_vector &X , flotante_vector &dXdt , flota
     
         for (int i = 1; i < N; i++)
             p[i] = (F0*weight[i] - g[i] - a[i] * p[i - 1]) * k[i];
-    
-//        p[N-1] = - asb * p[N - 2] * k[N-1];
-    
+      
         ///* loop from N - 2 to 0 inclusive */
         for (int i = N - 2; i >=0; i--)
             p[i] = p[i] - c[i] * p[i + 1];
     }
+    
     //COMPUTE derivates of vector field
     
     dXdt[0] = X[0+N];
