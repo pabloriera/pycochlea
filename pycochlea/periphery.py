@@ -182,19 +182,14 @@ def ihc_synapse(Y,data,Yscale=0.7e2,fcut=3000,vihc_scale=1.5,channels=0):
 
     return synout,vihc
 
-def ihcan_synapse(Y,data,Yscale=1e2,vihc_scale=2,anf_num = (100,50,30),channels=0):
+def ihcan_synapse(Y,data,Yscale=0.7e2,vihc_scale=1.5,anf_num = (100,50,30),channels=0):
     
     import itertools
     import pandas as pd
-    from brian.hears import Sound, FunctionFilterbank
 
     ff = np.flipud( np.logspace(np.log10(data['fmin']),np.log10(data['fmax']),data['nchan']))
 
-    pre_ihc = Sound(Y*Yscale,samplerate=data['fs']*Hz)
-
-    pre_ihc2 = FunctionFilterbank(pre_ihc,IHC_transduction,slope = 0.1,asym = 3.0,sign=1)
-
-    vihc = LowPass_filter(pre_ihc2,ff,3000,1.0,7)*vihc_scale
+    vihc = ihc(Y,data['fs'],Yscale=Yscale)*vihc_scale
 
     args = { 'fs': data['fs'], 'anf_num': anf_num,  'powerlaw': 'approximate','ffGn': False}
 
