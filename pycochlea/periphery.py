@@ -116,7 +116,7 @@ def zilany2014_run_synapse(vihc,ff,args,channels):
             
         nested.append(trains)
             
-    return nested
+    return synout,nested
 
 def synapse(vihc,ff,args,channels):
     from cochlea.zilany2014 import _zilany2014
@@ -196,12 +196,12 @@ def ihcan_synapse(Y,data,Yscale=0.7e2,vihc_scale=1.5,anf_num = (100,50,30),chann
     if channels==0:
         channels = xrange(data['nchan'])
     
-    nested = zilany2014_run_synapse(vihc,ff,args,channels)
+    synout,nested = zilany2014_run_synapse(vihc,ff,args,channels)
     
     trains = itertools.chain(*nested)
     anf = pd.DataFrame(list(trains))
 
-    return anf
+    return synout,anf
 
 def pure2periphery(pure_tone,data,channels=0):       
     
